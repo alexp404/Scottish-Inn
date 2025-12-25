@@ -1,0 +1,100 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+/* Clean, utilitarian hotel booking UI focused on readability and fast booking.
+   Brand: Scottish Inn & Suites (Houston, TX). Gold + baby blue accents, off-white background.
+   Mobile-first, accessible contrast, clear hierarchy, generous whitespace. */
+:root{
+  /* Color palette - Updated to Gold & Baby Blue Theme */
+  --bg:#f0f9ff;           /* light baby blue background */
+  --card:#ffffff;         /* cards */
+  --text:#0c4a6e;         /* deep baby blue text */
+  --muted:#0369a1;        /* muted baby blue text */
+  --primary:#b8860b;      /* deep gold for headers/buttons */
+  --primary-hover:#9a7209;
+  --secondary:#0ea5e9;    /* baby blue for highlights */
+  --secondary-hover:#0284c7;
+  --border:#bae6fd;       /* light baby blue border */
+  --focus:#ffd700;        /* gold focus ring */
+
+  /* Layout scale */
+  --max-w:1100px;
+  --space-1:4px;
+  --space-2:8px;
+  --space-3:12px;
+  --space-4:16px;
+  --space-5:20px;
+  --space-6:24px;
+  --space-8:32px;
+  --radius:10px;
+}
+
+*{box-sizing:border-box}
+html,body,#root{height:100%}
+body{
+  margin:0;padding:0;background:var(--bg);
+  font-family:'Inter', ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;
+  color:var(--text);
+  line-height:1.55;
+}
+img{max-width:100%;display:block}
+
+/* Focus visibility for keyboard users */
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+
+/* Containers & layout */
+.container{max-width:var(--max-w);margin:0 auto;padding:var(--space-4)}
+main{display:block;padding-bottom:var(--space-8)}
+
+/* Header */
+.header{display:flex;align-items:center;justify-content:space-between;padding:var(--space-3) 0}
+.header .brand{font-weight:800;font-size:1.2rem;color:var(--primary)}
+.header nav a{color:var(--primary);text-decoration:none;margin-right:var(--space-3)}
+.header nav a:last-child{margin-right:0}
+.header nav a:hover{text-decoration:underline}
+
+/* Footer */
+.footer{padding:var(--space-6) 0;text-align:center;color:var(--muted);border-top:1px solid var(--border)}
+
+/* Grid for rooms/results */
+.grid{display:grid;grid-template-columns:repeat(1,minmax(0,1fr));gap:var(--space-4)}
+@media (min-width:640px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (min-width:960px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+/* Card */
+.card{background:var(--card);border-radius:var(--radius);box-shadow:0 1px 2px rgba(184,134,11,0.1);padding:var(--space-4);border:1px solid var(--border)}
+.card h3{margin:0 0 var(--space-3);font-size:1rem}
+
+/* Buttons */
+.button{background:var(--primary);color:#fff;border:1px solid transparent;padding:var(--space-3) var(--space-4);border-radius:8px;cursor:pointer;font-weight:600}
+.button:hover{background:var(--primary-hover)}
+.button:focus{outline:2px solid var(--focus);outline-offset:2px}
+.button[disabled]{opacity:.6;cursor:not-allowed}
+.button-ghost{background:transparent;color:var(--primary);border-color:var(--primary)}
+.button-secondary{background:var(--secondary);}
+.button-secondary:hover{background:var(--secondary-hover)}
+
+/* Inputs */
+.input{padding:var(--space-3);border:1px solid var(--border);border-radius:8px;width:100%;font-size:.95rem}
+.input:focus{outline:2px solid var(--focus);outline-offset:2px;border-color:transparent}
+label{display:block}
+
+/* Utility */
+.loading{display:flex;align-items:center;justify-content:center;padding:var(--space-6)}
+.muted{color:var(--muted)}
+.section{margin:var(--space-6) 0}
+
+/* Page-specific helpers */
+.hero{background:linear-gradient(180deg, rgba(184,134,11,.08), rgba(184,134,11,0));padding:var(--space-6) 0;margin-bottom:var(--space-6)}
+.hero .lead{max-width:720px;color:var(--muted)}
+.search-card{display:grid;gap:var(--space-3)}
+@media (min-width:640px){.search-card{grid-template-columns:repeat(4,1fr)}}
+.search-card .actions{grid-column:1/-1;display:flex;gap:var(--space-3)}
+@media (min-width:640px){.search-card .actions{grid-column:auto}}
+
+/* Summary panel */
+.summary{background:linear-gradient(135deg, #f0f9ff, #fffadc);border:1px solid var(--border);border-radius:var(--radius);padding:var(--space-4)}
+.summary .row{display:flex;justify-content:space-between;margin-bottom:var(--space-2)}

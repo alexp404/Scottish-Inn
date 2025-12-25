@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: hotel_user
+          POSTGRES_PASSWORD: 180496
+          POSTGRES_DB: hotelDB
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Backend install
+        working-directory: backend
+        run: npm ci
+
+      - name: Backend test
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql://hotel_user:180496@localhost:5432/hotelDB
+          JWT_SECRET: testsecret
+        run: npm test -- --runInBand
+
+      - name: Frontend install
+        working-directory: frontend
+        run: npm ci
+
+      - name: Frontend test
+        working-directory: frontend
+        run: npm run test -- --run
+

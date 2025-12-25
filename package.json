@@ -1,0 +1,74 @@
+{
+  "name": "hotel-management-app",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "description": "Hotel Management Application - Full Stack",
+  "scripts": {
+    "install:all": "cd frontend && npm install && cd ../backend && npm install",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:firetv": "cd backend && npm run dev:firetv",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "build:frontend": "cd frontend && npm run build",
+    "build:backend": "cd backend && npm run build",
+    "build": "npm run build:backend && npm run build:frontend",
+    "start:backend": "cd backend && npm start",
+    "start:frontend": "cd frontend && npm run preview",
+    "test:backend": "cd backend && npm test",
+    "test:frontend": "cd frontend && npm test",
+    "test": "npm run test:backend && npm run test:frontend",
+    "migrate": "cd backend && npm run migrate",
+    "seed-admin": "cd backend && npm run seed-admin",
+    "fix:typescript": "node -e \"require('child_process').exec(process.platform === 'win32' ? 'scripts\\\\fix-typescript.bat' : 'bash scripts/fix-typescript.sh', (err, stdout, stderr) => { if (stdout) console.log(stdout); if (stderr) console.error(stderr); if (err) process.exit(1); })\"",
+    "docker:setup": "node -e \"require('child_process').exec(process.platform === 'win32' ? 'scripts\\\\docker-setup.bat' : 'bash scripts/docker-setup.sh', (err, stdout, stderr) => { if (stdout) console.log(stdout); if (stderr) console.error(stderr); if (err) process.exit(1); })\"",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:restart": "docker-compose restart",
+    "docker:build": "docker-compose build --no-cache",
+    "docker:logs": "docker-compose logs -f",
+    "docker:logs:backend": "docker-compose logs -f backend",
+    "docker:logs:frontend": "docker-compose logs -f frontend",
+    "docker:logs:db": "docker-compose logs -f db",
+    "docker:clean": "docker-compose down --volumes --remove-orphans && docker image prune -f",
+    "docker:shell:backend": "docker exec -it hotel_backend bash",
+    "docker:shell:frontend": "docker exec -it hotel_frontend sh",
+    "docker:shell:db": "docker exec -it hotel_db psql -U hotel_user -d hotelDB",
+    "clean": "rimraf frontend/dist frontend/node_modules backend/dist backend/node_modules node_modules",
+    "deploy:build": "npm run build && npm run migrate",
+    "deploy:prod": "NODE_ENV=production npm run deploy:build",
+    "serve:prod": "NODE_ENV=production concurrently \"npm run start:backend\" \"npm run start:frontend\"",
+    "ionos:setup": "node -e \"require('child_process').exec(process.platform === 'win32' ? 'scripts\\\\ionos-setup.bat' : 'bash scripts/ionos-setup.sh', (err, stdout, stderr) => { if (stdout) console.log(stdout); if (stderr) console.error(stderr); if (err) process.exit(1); })\"",
+    "ionos:test-build": "npm run build"
+  },
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "rimraf": "^5.0.5"
+  },
+  "overrides": {
+    "glob": "^10.3.10",
+    "minimatch": "^9.0.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alexp404/reactproject3"
+  },
+  "keywords": [
+    "hotel-management",
+    "react",
+    "typescript",
+    "node",
+    "express",
+    "postgresql"
+  ],
+  "author": "",
+  "license": "MIT"
+}
