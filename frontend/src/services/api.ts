@@ -1,7 +1,9 @@
 import { Room, DeviceStatus, FireTVChannel } from '../types'
 
 // Vite exposes env vars via import.meta.env (not process.env)
-const API_BASE = import.meta.env.VITE_API_URL || 'https://scottish-inn-backend.onrender.com'
+// Default to localhost in development, production URL in production
+const API_BASE = import.meta.env.VITE_API_URL || 
+  (import.meta.env.DEV ? 'http://localhost:5000' : 'https://scottish-inn-backend.onrender.com')
 const ADMIN_TOKEN = import.meta.env.VITE_ADMIN_TOKEN || 'admin-secret'
 
 function getAdminToken(){
@@ -184,3 +186,9 @@ export async function setVolume(deviceId: string, level: number){
 export async function getChannels(deviceId: string): Promise<{ channels: FireTVChannel[] }>{
   return request(`/remote/api/channels?deviceId=${encodeURIComponent(deviceId)}`)
 }
+
+// Log API configuration on load (helpful for debugging)
+console.log('?? API Configuration:', {
+  baseUrl: API_BASE,
+  environment: import.meta.env.DEV ? 'development' : 'production'
+})
