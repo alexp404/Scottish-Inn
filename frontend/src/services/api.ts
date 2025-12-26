@@ -6,6 +6,14 @@ const API_BASE = import.meta.env.VITE_API_URL ||
   (import.meta.env.DEV ? 'http://localhost:5000' : 'https://scottish-inn-backend.onrender.com')
 const ADMIN_TOKEN = import.meta.env.VITE_ADMIN_TOKEN || 'admin-secret'
 
+// Log API configuration in development only
+if (import.meta.env.DEV) {
+  console.log('?? API Configuration:', {
+    baseUrl: API_BASE,
+    environment: 'development'
+  })
+}
+
 function getAdminToken(){
   return localStorage.getItem('admin_token') || ADMIN_TOKEN
 }
@@ -186,9 +194,3 @@ export async function setVolume(deviceId: string, level: number){
 export async function getChannels(deviceId: string): Promise<{ channels: FireTVChannel[] }>{
   return request(`/remote/api/channels?deviceId=${encodeURIComponent(deviceId)}`)
 }
-
-// Log API configuration on load (helpful for debugging)
-console.log('?? API Configuration:', {
-  baseUrl: API_BASE,
-  environment: import.meta.env.DEV ? 'development' : 'production'
-})
