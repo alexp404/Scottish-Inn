@@ -1,7 +1,10 @@
 import { Room, DeviceStatus, FireTVChannel } from '../types'
+import dotenv from 'dotenv'
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000'
-const ADMIN_TOKEN = import.meta.env.VITE_ADMIN_TOKEN || 'admin-secret'
+dotenv.config();
+
+const API_BASE = process.env.VITE_API_URL || 'https://scottishinn1960.com:5432'
+const ADMIN_TOKEN = process.env.VITE_ADMIN_TOKEN || 'admin-secret'
 
 function getAdminToken(){
   return localStorage.getItem('admin_token') || ADMIN_TOKEN

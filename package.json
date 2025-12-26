@@ -46,6 +46,7 @@
     "backend"
   ],
   "devDependencies": {
+    "@types/node": "^25.0.3",
     "concurrently": "^8.2.2",
     "rimraf": "^5.0.5"
   },
