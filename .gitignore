@@ -365,3 +365,4 @@ FodyWeavers.xsd
 /backend/.gitignore
 /frontend/.env.example
 /.env.example
+/SIGNUP_TESTING_GUIDE.md
