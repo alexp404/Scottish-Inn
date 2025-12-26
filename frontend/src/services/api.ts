@@ -3,7 +3,7 @@ import dotenv from 'dotenv'
 
 dotenv.config();
 
-const API_BASE = process.env.VITE_API_URL || 'https://scottishinn1960.com:5432'
+const API_BASE = process.env.VITE_API_URL || 'https://scottish-inn.onrender.com'
 const ADMIN_TOKEN = process.env.VITE_ADMIN_TOKEN || 'admin-secret'
 
 function getAdminToken(){
