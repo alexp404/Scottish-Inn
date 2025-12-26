@@ -1,10 +1,8 @@
 import { Room, DeviceStatus, FireTVChannel } from '../types'
-import dotenv from 'dotenv'
 
-dotenv.config();
-
-const API_BASE = process.env.VITE_API_URL || 'https://scottish-inn.onrender.com'
-const ADMIN_TOKEN = process.env.VITE_ADMIN_TOKEN || 'admin-secret'
+// Vite exposes env vars via import.meta.env (not process.env)
+const API_BASE = import.meta.env.VITE_API_URL || 'https://scottish-inn-backend.onrender.com'
+const ADMIN_TOKEN = import.meta.env.VITE_ADMIN_TOKEN || 'admin-secret'
 
 function getAdminToken(){
   return localStorage.getItem('admin_token') || ADMIN_TOKEN
