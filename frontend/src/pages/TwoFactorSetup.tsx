@@ -18,7 +18,7 @@ export default function TwoFactorSetup(){
     setLoading(true)
     try{
       const token = localStorage.getItem('admin_token')
-      const res = await fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/2fa/setup', {
+      const res = await fetch((import.meta.env.VITE_API_URL || 'https://scottish-inn.onrender.com') + '/api/2fa/setup', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       })
@@ -40,7 +40,7 @@ export default function TwoFactorSetup(){
     setLoading(true)
     try{
       const token = localStorage.getItem('admin_token')
-      const res = await fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/2fa/verify', {
+      const res = await fetch((import.meta.env.VITE_API_URL || 'https://scottish-inn.onrender.com') + '/api/2fa/verify', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ code: verificationCode })

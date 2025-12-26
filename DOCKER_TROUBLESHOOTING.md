@@ -198,7 +198,7 @@ docker system prune -a -f
 ### Check Service Health
 1. **API Health Check:**
    ```bash
-   curl http://localhost:5000/api/health
+   curl https://scottish-inn.onrender.com/api/health
    ```
 
 2. **Frontend Check:**

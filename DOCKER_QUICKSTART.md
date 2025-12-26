@@ -28,7 +28,7 @@ npm run docker:up
 
 ### Step 3: Open Application
 - **Frontend:** http://localhost:5173
-- **Backend:** http://localhost:5000/api/health
+- **Backend:** https://scottish-inn.onrender.com/api/health
 - **Database:** Use any PostgreSQL client on port 5433
 
 ## Available Scripts
@@ -45,8 +45,8 @@ npm run docker:up
 ## Service URLs
 
 - **Frontend Application:** http://localhost:5173
-- **Backend API:** http://localhost:5000
-- **API Health Check:** http://localhost:5000/api/health
+- **Backend API:** https://scottish-inn.onrender.com
+- **API Health Check:** https://scottish-inn.onrender.com/api/health
 - **Database:** postgresql://hotel_user:180496@localhost:5433/hotelDB
 
 ## Troubleshooting
@@ -112,4 +112,4 @@ Environment variables are already configured in docker-compose.yml.
 
 **?? That's it!** Your hotel management app should now be running on:
 - http://localhost:5173 (frontend)
-- http://localhost:5000 (backend)
+- https://scottish-inn.onrender.com (backend)

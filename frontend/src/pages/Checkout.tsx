@@ -49,7 +49,7 @@ function CheckoutInner(){
     }
     setSummary(mock)
     try{
-      const res = await fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/payments/intent', {
+      const res = await fetch((import.meta.env.VITE_API_URL || 'https://scottish-inn.onrender.com') + '/api/payments/intent', {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ amount: mock.subtotal + mock.tax, currency: 'usd', bookingId })
       })
       const data = await res.json()

@@ -402,7 +402,7 @@ PORT=5000
 
 ### Frontend (.env)
 ```bash
-VITE_API_URL=http://localhost:5000
+VITE_API_URL=https://scottish-inn.onrender.com
 ```
 
 ---
@@ -413,7 +413,7 @@ VITE_API_URL=http://localhost:5000
 
 **Request:**
 ```http
-POST http://localhost:5000/api/auth/register
+POST https://scottish-inn.onrender.com/api/auth/register
 Content-Type: application/json
 
 {

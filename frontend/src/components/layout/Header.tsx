@@ -9,7 +9,7 @@ export default function Header() {
     const refreshToken = localStorage.getItem('refresh_token')
     if (refreshToken) {
       try {
-        await fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/auth/logout', {
+        await fetch((import.meta.env.VITE_API_URL || 'https://scottish-inn.onrender.com') + '/api/auth/logout', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ refreshToken })

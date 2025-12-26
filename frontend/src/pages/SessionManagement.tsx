@@ -25,7 +25,7 @@ export default function SessionManagement(){
     setLoading(true)
     try{
       const token = localStorage.getItem('admin_token')
-      const res = await fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/sessions', {
+      const res = await fetch((import.meta.env.VITE_API_URL || 'https://scottish-inn.onrender.com') + '/api/sessions', {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       const data = await res.json()
@@ -41,7 +41,7 @@ export default function SessionManagement(){
   async function load2FAStatus(){
     try{
       const token = localStorage.getItem('admin_token')
-      const res = await fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/2fa/status', {
+      const res = await fetch((import.meta.env.VITE_API_URL || 'https://scottish-inn.onrender.com') + '/api/2fa/status', {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       const data = await res.json()
@@ -55,7 +55,7 @@ export default function SessionManagement(){
     if (!confirm('Are you sure you want to revoke this session?')) return
     try{
       const token = localStorage.getItem('admin_token')
-      const res = await fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + `/api/sessions/${sessionId}`, {
+      const res = await fetch((import.meta.env.VITE_API_URL || 'https://scottish-inn.onrender.com') + `/api/sessions/${sessionId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       })
@@ -74,7 +74,7 @@ export default function SessionManagement(){
     try{
       const token = localStorage.getItem('admin_token')
       const refreshToken = localStorage.getItem('refresh_token')
-      const res = await fetch((import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api/sessions/revoke-all', {
+      const res = await fetch((import.meta.env.VITE_API_URL || 'https://scottish-inn.onrender.com') + '/api/sessions/revoke-all', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ currentRefreshToken: refreshToken })
