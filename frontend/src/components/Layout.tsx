@@ -1,5 +1,6 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import PrefetchLink from './ui/PrefetchLink'
 
 interface LayoutProps {
     children: React.ReactNode
@@ -25,16 +26,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <div className="max-w-6xl mx-auto px-4">
                     <div className="flex justify-between items-center h-16">
                         {/* Logo */}
-                        <Link to="/" className="flex items-center">
+                        <PrefetchLink to="/" className="flex items-center">
                             <div className="text-2xl font-bold text-gold-800" style={{ fontFamily: 'Playfair Display, serif' }}>
                                 Scottish Inn & Suites
                             </div>
-                        </Link>
+                        </PrefetchLink>
 
                         {/* Desktop Navigation */}
                         <nav className="hidden md:flex space-x-8">
                             {navigation.map((item) => (
-                                <Link
+                                <PrefetchLink
                                     key={item.name}
                                     to={item.href}
                                     className={`px-3 py-2 text-sm font-medium transition-colors ${isActive(item.href)
@@ -43,7 +44,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                                         }`}
                                 >
                                     {item.name}
-                                </Link>
+                                </PrefetchLink>
                             ))}
                         </nav>
 
@@ -55,12 +56,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                             >
                                 (281) 821-9900
                             </a>
-                            <Link
+                            <PrefetchLink
                                 to="/rooms"
                                 className="bg-gold-600 hover:bg-gold-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
                             >
                                 Book Now
-                            </Link>
+                            </PrefetchLink>
                         </div>
 
                         {/* Mobile menu button */}

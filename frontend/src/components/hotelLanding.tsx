@@ -288,7 +288,7 @@ const HotelLanding: React.FC = () => {
 
             {/* Hero Section with Image Slideshow */}
             <div className="relative">
-                <ImageSlideshow images={hotelImages} />
+                <ImageSlideshow images={hotelImages} priority={true} />
 
                 {/* Overlay Content */}
                 <div className="absolute inset-0 bg-gradient-to-r from-gold-900/70 to-babyblue-900/50 flex items-center justify-center">

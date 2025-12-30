@@ -49,7 +49,7 @@ root.render(
               <Route path="/admin/login" element={<AdminLogin />} />
               <Route path="/admin/forgot-password" element={<ForgotPassword />} />
               <Route path="/admin/reset-password" element={<ResetPassword />} />
-              <Route path="/admin/2fa/setup" element={<TwoFactorSetup />} />
+              <Route path="/admin/2fa/setup2" element={<TwoFactorSetup />} />
               <Route path="/admin/sessions" element={<SessionManagement />} />
 
               <Route path="/signup" element={<Signup />} />

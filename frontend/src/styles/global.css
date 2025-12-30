@@ -3,7 +3,7 @@
 @import 'tailwindcss/utilities';
 @import './animations.css';
 
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap');
+/* Fonts are preloaded in index.html - no need to import here to avoid double loading */
 
 /* Clean, utilitarian hotel booking UI focused on readability and fast booking.
    Brand: Scottish Inn & Suites (Houston, TX). Gold + baby blue accents, off-white background.

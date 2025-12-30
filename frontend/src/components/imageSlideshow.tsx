@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import OptimizedImage from './ui/OptimizedImage'
 
 interface ImageSlideshowProps {
     images: string[]
     autoAdvance?: boolean
     interval?: number
+    priority?: boolean // For hero images
 }
 
 const ImageSlideshow: React.FC<ImageSlideshowProps> = ({
     images,
     autoAdvance = true,
-    interval = 4000
+    interval = 4000,
+    priority = false
 }) => {
     const [currentIndex, setCurrentIndex] = useState(0)
 
@@ -40,7 +43,7 @@ const ImageSlideshow: React.FC<ImageSlideshowProps> = ({
 
     return (
         <div className="relative h-64 md:h-96 overflow-hidden rounded-lg shadow-lg group">
-            {/* Images */}
+            {/* Images with optimization */}
             <AnimatePresence mode="wait">
                 <motion.div
                     key={currentIndex}
@@ -50,10 +53,12 @@ const ImageSlideshow: React.FC<ImageSlideshowProps> = ({
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.5 }}
                 >
-                    <img
+                    <OptimizedImage
                         src={images[currentIndex]}
                         alt={`Hotel view ${currentIndex + 1}`}
-                        className="w-full h-full object-cover"
+                        priority={priority && currentIndex === 0} // Only first image is priority
+                        className="w-full h-full"
+                        sizes="(max-width: 768px) 100vw, 1200px"
                     />
                     {/* Dark overlay for text readability */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent" />
@@ -81,14 +86,14 @@ const ImageSlideshow: React.FC<ImageSlideshowProps> = ({
                 </svg>
             </button>
 
-            {/* Dot Indicators */}
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
+            {/* Dot indicators */}
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
                 {images.map((_, index) => (
                     <button
                         key={index}
                         onClick={() => goToSlide(index)}
-                        className={`w-3 h-3 rounded-full transition-colors duration-200 ${index === currentIndex
-                                ? 'bg-white'
+                        className={`w-2 h-2 rounded-full transition-all ${index === currentIndex
+                                ? 'bg-white w-6'
                                 : 'bg-white/50 hover:bg-white/75'
                             }`}
                         aria-label={`Go to slide ${index + 1}`}
