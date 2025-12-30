@@ -1,11 +1,14 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, lazy, Suspense } from 'react'
 import Layout from '../components/Layout'
-import { fetchBookings, cancelBooking, getAdminStats, getDailyRevenue, getOccupancyReport } from '../services/api'
+import { fetchBookings, cancelBooking } from '../services/api'
 import Card from '../components/ui/Card'
 import LoadingSpinner from '../components/ui/LoadingSpinner'
 import Table from '../components/ui/Table'
 import { useNavigate } from 'react-router-dom'
 import { useToasts } from '../context/ToastContext'
+
+// Lazy load stats component to reduce initial bundle
+const AdminStats = lazy(() => import('../components/admin/AdminStats'))
 
 export default function AdminDashboard(){
   const [bookings, setBookings] = useState<any[] | null>(null)
@@ -16,9 +19,6 @@ export default function AdminDashboard(){
   const [total, setTotal] = useState(0)
   const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined)
   const [search, setSearch] = useState('')
-  const [stats, setStats] = useState<{ occupancyRate: number; revenueToday: number; bookingsToday: number } | null>(null)
-  const [revenueRows, setRevenueRows] = useState<{ date: string; revenue: number }[]>([])
-  const [occupancyRows, setOccupancyRows] = useState<any[]>([])
   const navigate = useNavigate()
   const { push } = useToasts()
 
@@ -42,40 +42,16 @@ export default function AdminDashboard(){
     }
   }
 
-  async function loadStats(){
-    try{
-      const s = await getAdminStats()
-      setStats(s)
-      const r = await getDailyRevenue()
-      setRevenueRows(r.rows)
-      const o = await getOccupancyReport()
-      setOccupancyRows(o.rows)
-    }catch(err:any){
-      console.error('Failed to load stats/reports', err)
-    }
-  }
-
-  useEffect(()=>{ load(); loadStats() }, [page, statusFilter])
-
-  useEffect(()=>{
-    function handler(e:any){
-      const id = e.detail?.id
-      if (id) setBookings(prev => prev ? prev.filter(b=>b.id !== id) : prev)
-    }
-    window.addEventListener('booking-cancelled', handler as EventListener)
-    return ()=> window.removeEventListener('booking-cancelled', handler as EventListener)
-  },[])
+  useEffect(()=>{ load() }, [page, statusFilter, search])
 
   async function handleRemove(id: string){
-    if (!confirm('Are you sure you want to cancel this booking?')) return
-    setBookings(prev => prev ? prev.filter(b => b.id !== id) : prev)
+    if (!confirm('Cancel this booking?')) return
     try{
-      await cancelBooking(id, 'Cancelled via admin dashboard')
+      await cancelBooking(id, 'Cancelled via admin UI')
       push({ type: 'success', message: 'Booking cancelled' })
-      window.dispatchEvent(new CustomEvent('booking-cancelled', { detail: { id } }))
+      load()
     }catch(err:any){
       push({ type: 'error', message: err?.message || 'Failed to cancel booking' })
-      load()
     }
   }
 
@@ -101,60 +77,15 @@ export default function AdminDashboard(){
       <section className="section">
         <h1 style={{color:'var(--primary)'}}>Admin Dashboard</h1>
 
-        {/* Stats tiles */}
-        <div style={{display:'grid',gridTemplateColumns:'repeat(1,1fr)',gap:12,marginTop:12}}>
-          <Card>
-            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-              <div>
-                <div className="muted" style={{fontSize:12}}>Occupancy Rate</div>
-                <div style={{fontSize:24,fontWeight:800}}>{stats ? `${stats.occupancyRate}%` : '—'}</div>
-              </div>
-              <div>
-                <div className="muted" style={{fontSize:12}}>Revenue Today</div>
-                <div style={{fontSize:24,fontWeight:800}}>{stats ? `$${stats.revenueToday.toFixed(2)}` : '—'}</div>
-              </div>
-              <div>
-                <div className="muted" style={{fontSize:12}}>Bookings Today</div>
-                <div style={{fontSize:24,fontWeight:800}}>{stats ? stats.bookingsToday : '—'}</div>
-              </div>
-            </div>
-          </Card>
-        </div>
-
-        {/* Revenue table */}
-        <Card>
-          <h3>Daily Revenue (Last 14 days)</h3>
-          <table className="table">
-            <thead>
-              <tr><th>Date</th><th>Revenue</th></tr>
-            </thead>
-            <tbody>
-              {revenueRows.map(r => (
-                <tr key={r.date}><td>{r.date}</td><td>${Number(r.revenue).toFixed(2)}</td></tr>
-              ))}
-            </tbody>
-          </table>
-        </Card>
-
-        {/* Occupancy table */}
-        <Card>
-          <h3>Current Occupancy by Room</h3>
-          <table className="table">
-            <thead>
-              <tr><th>Room</th><th>Status</th><th>Guest</th><th>Checkout</th></tr>
-            </thead>
-            <tbody>
-              {occupancyRows.map((o:any, idx:number) => (
-                <tr key={idx}>
-                  <td>{o.room_number}</td>
-                  <td><span className={`chip ${o.current_status==='occupied'?'online':'offline'}`}>{o.current_status}</span></td>
-                  <td>{o.first_name ? `${o.first_name} ${o.last_name}` : '-'}</td>
-                  <td>{o.check_out_date ?? '-'}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </Card>
+        {/* Lazy load stats component */}
+        <Suspense fallback={
+          <div className="animate-pulse space-y-4 mt-4">
+            <div className="h-24 bg-gray-200 rounded-lg"></div>
+            <div className="h-64 bg-gray-200 rounded-lg"></div>
+          </div>
+        }>
+          <AdminStats />
+        </Suspense>
 
         <Card>
           <div style={{display:'flex',gap:8,marginBottom:12,flexWrap:'wrap'}}>
