@@ -186,9 +186,9 @@ const HotelLanding: React.FC = () => {
 
     // Stock hotel images (you can replace with real images later)
     const hotelImages = [
-        'https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', // Hotel lobby
-        'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', // Hotel room
-        'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'  // Hotel exterior
+        'https://i.postimg.cc/TKbsD99k/hotel-front.png',
+        'https://i.postimg.cc/68ZPv001/extended-stay.png', // Hotel lobby
+        'https://i.postimg.cc/JsXFkqqN/jacuzzi.png'
     ]
 
     // Show combined error state
