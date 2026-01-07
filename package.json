@@ -12,7 +12,7 @@
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "build:frontend": "cd frontend && npm run build",
     "build:backend": "cd backend && npm run build",
-    "build": "npm run build:backend && npm run build:frontend",
+    "build": "tsc -b && vite build && npm run build:backend && npm run build:frontend",
     "start:backend": "cd backend && npm start",
     "start:frontend": "cd frontend && npm run preview",
     "test:backend": "cd backend && npm test",
@@ -39,7 +39,8 @@
     "deploy:prod": "NODE_ENV=production npm run deploy:build",
     "serve:prod": "NODE_ENV=production concurrently \"npm run start:backend\" \"npm run start:frontend\"",
     "ionos:setup": "node -e \"require('child_process').exec(process.platform === 'win32' ? 'scripts\\\\ionos-setup.bat' : 'bash scripts/ionos-setup.sh', (err, stdout, stderr) => { if (stdout) console.log(stdout); if (stderr) console.error(stderr); if (err) process.exit(1); })\"",
-    "ionos:test-build": "npm run build"
+    "ionos:test-build": "npm run build",
+    "preview": "vite preview"
   },
   "workspaces": [
     "frontend",

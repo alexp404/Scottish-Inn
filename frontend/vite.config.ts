@@ -1,6 +1,9 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
+import dns from 'node:dns'
+
+dns.setDefaultResultOrder('verbatim')
 
 export default defineConfig({
   plugins: [react()],
@@ -10,6 +13,7 @@ export default defineConfig({
     }
   },
   server: {
-    port: 5173
+      port: 5173,
+      allowedHosts: ['.localhost', '.localdomain', '.minerals-telecommunications-banners-modems.trycloudflare.com']
   }
 })
