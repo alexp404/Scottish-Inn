@@ -15,7 +15,6 @@ import App from './App'
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'))
 const BookingDetail = lazy(() => import('./pages/BookingDetail'))
 const AdminLogin = lazy(() => import('./pages/AdminLogin'))
-const ForgotPassword = lazy(() => import('./pages/ForgotPassword'))
 const ResetPassword = lazy(() => import('./pages/ResetPassword'))
 const TwoFactorSetup = lazy(() => import('./pages/TwoFactorSetup'))
 const SessionManagement = lazy(() => import('./pages/SessionManagement'))
@@ -47,7 +46,6 @@ root.render(
               <Route path="/admin/devices" element={<AdminDevices />} />
               <Route path="/admin/bookings/:id" element={<BookingDetail />} />
               <Route path="/admin/login" element={<AdminLogin />} />
-              <Route path="/admin/forgot-password" element={<ForgotPassword />} />
               <Route path="/admin/reset-password" element={<ResetPassword />} />
               <Route path="/admin/2fa/setup2" element={<TwoFactorSetup />} />
               <Route path="/admin/sessions" element={<SessionManagement />} />

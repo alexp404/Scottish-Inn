@@ -69,7 +69,7 @@ router.get('/api/availability', async (req, res) => {
     const result = await pool.query(baseQuery, params)
 
     // Convert numeric strings to numbers for frontend
-    const rooms = result.rows.map(r => ({
+    const rooms = result.rows.map((r: any) => ({
       ...r,
       basePrice: Number(r.basePrice)
     }))
