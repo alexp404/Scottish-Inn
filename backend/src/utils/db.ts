@@ -15,14 +15,14 @@ const dbConfig: any = {
   queueLimit: 0,
 }
 
-let pool: mysql.Pool | null = null
+let mysqlPool: mysql.Pool | null = null
 
 export function getPool(): mysql.Pool {
-  if (!pool) {
+  if (!mysqlPool) {
     console.log('[Database] Creating MySQL connection pool...')
-    pool = mysql.createPool(dbConfig)
+    mysqlPool = mysql.createPool(dbConfig)
   }
-  return pool
+  return mysqlPool
 }
 
 export async function testConnection() {
@@ -80,10 +80,22 @@ export async function queryOne(sql: string, params: any[] = []) {
 }
 
 export async function closePool() {
-  if (pool) {
-    await pool.end()
-    pool = null
+  if (mysqlPool) {
+    await mysqlPool.end()
+    mysqlPool = null
     console.log('🔒 [Database] Connection pool closed')
+  }
+}
+
+function toMySqlParams(sql: string): string {
+  return sql.replace(/\$\d+/g, '?')
+}
+
+export const pool: any = {
+  async query(sql: string, params: any[] = []) {
+    const converted = toMySqlParams(sql)
+    const rows = await query(converted, params)
+    return { rows, rowCount: Array.isArray(rows) ? rows.length : 0 }
   }
 }
 

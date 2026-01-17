@@ -35,7 +35,7 @@ router.get('/api/rooms', async (req, res) => {
 // GET /api/rooms/:id - fetch specific room from database
 router.get('/api/rooms/:id', async (req, res) => {
   try {
-    const [room] = await query(`
+    const rows = await query(`
       SELECT 
         id,
         room_number as roomNumber,
@@ -47,15 +47,12 @@ router.get('/api/rooms/:id', async (req, res) => {
       FROM rooms
       WHERE id = ?
     `, [req.params.id])
-    
+    const roomArr = rows as any[]
+    const room = roomArr[0]
     if (!room) {
       return res.status(404).json({ error: 'Room not found' })
     }
-    
-    res.json({
-      ...room,
-      basePrice: Number(room.basePrice)
-    })
+    res.json({ ...room, basePrice: Number(room.basePrice) })
   } catch (err) {
     console.error('Error fetching room:', err)
     res.status(500).json({ error: 'Failed to fetch room' })

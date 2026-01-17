@@ -39,10 +39,10 @@ router.post('/api/bookings', async (req, res) => {
     return res.status(400).json({ errors })
   }
 
-  // Ensure room exists
   try{
     const rooms = await query('SELECT id FROM rooms WHERE id = ?', [body.room_id])
-    if (!rooms || rooms.length === 0){
+    const roomArr = rooms as any[]
+    if (!roomArr || roomArr.length === 0){
       return res.status(400).json({ errors: { room_id: 'room_id does not exist' } })
     }
   }catch(err){
@@ -57,45 +57,39 @@ router.post('/api/bookings', async (req, res) => {
     const tax = Math.round(subtotal * TAX_RATE * 100) / 100 // Round to 2 decimals
     const totalPrice = subtotal + tax
 
-    const insertQuery = `
-      INSERT INTO bookings (
+    await query(
+      `INSERT INTO bookings (
         id, room_id, user_id, check_in_date, check_out_date, guest_count,
         first_name, last_name, email, phone_number, special_requests,
         subtotal, tax, total_price, paid, payment_method, payment_reference,
         confirmation_id, status
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, [
+        id,
+        body.room_id,
+        body.user_id || null,
+        body.check_in_date,
+        body.check_out_date,
+        Number(body.guest_count),
+        body.first_name,
+        body.last_name,
+        body.email,
+        body.phone_number || null,
+        body.special_requests || null,
+        subtotal,
+        tax,
+        totalPrice,
+        body.paid ?? false,
+        body.payment_method || null,
+        body.payment_reference || null,
+        `CONF-${Date.now()}`,
+        'pending'
+      ]
+    )
 
-    const values = [
-      id,
-      body.room_id,
-      body.user_id || null,
-      body.check_in_date,
-      body.check_out_date,
-      Number(body.guest_count),
-      body.first_name,
-      body.last_name,
-      body.email,
-      body.phone_number || null,
-      body.special_requests || null,
-      subtotal,
-      tax,
-      totalPrice,
-      body.paid ?? false,
-      body.payment_method || null,
-      body.payment_reference || null,
-      `CONF-${Date.now()}`,
-      'pending'
-    ]
-
-    await query(insertQuery, values)
-
-    // Fetch the created booking
     const bookingResult = await query('SELECT * FROM bookings WHERE id = ?', [id])
-    const booking = bookingResult[0]
+    const booking = (bookingResult as any[])[0]
 
-    // Send confirmation email (async)
-    sendBookingConfirmation(booking.email, booking).catch(console.error)
+    sendBookingConfirmation?.(booking.email, booking)
 
     return res.status(201).json(booking)
   }catch(err){
@@ -120,16 +114,11 @@ router.get('/api/bookings', adminAuth, async (req, res) => {
     const whereClause = where.length ? `WHERE ${where.join(' AND ')}` : ''
     const offset = (page - 1) * pageSize
 
-    const q = `SELECT * FROM bookings ${whereClause} ORDER BY created_at DESC LIMIT ? OFFSET ?`
-    const countParams = params.slice()
-    params.push(pageSize, offset)
+    const rows = await query(`SELECT * FROM bookings ${whereClause} ORDER BY created_at DESC LIMIT ? OFFSET ?`, [...params, pageSize, offset])
+    const countRows = await query(`SELECT COUNT(*) as total FROM bookings ${whereClause}`, params)
+    const total = Number((countRows as any[])[0]?.total || 0)
 
-    const result = await query(q, params)
-    const countQuery = `SELECT COUNT(*) as total FROM bookings ${whereClause}`
-    const countResult = await query(countQuery, countParams)
-    const total = Number(countResult[0]?.total || 0)
-
-    return res.json({ bookings: result, page, pageSize, total })
+    return res.json({ bookings: rows, page, pageSize, total })
   }catch(err){
     console.error('DB fetch bookings error:', err)
     return res.status(500).json({ error: 'Failed to fetch bookings' })
@@ -140,9 +129,10 @@ router.get('/api/bookings', adminAuth, async (req, res) => {
 router.get('/api/bookings/:id', adminAuth, async (req, res) => {
   const id = req.params.id
   try{
-    const result = await query('SELECT * FROM bookings WHERE id = ?', [id])
-    if (!result || result.length === 0) return res.status(404).json({ error: 'Booking not found' })
-    return res.json(result[0])
+    const rows = await query('SELECT * FROM bookings WHERE id = ?', [id])
+    const arr = rows as any[]
+    if (!arr.length) return res.status(404).json({ error: 'Booking not found' })
+    return res.json(arr[0])
   }catch(err){
     console.error('DB get booking error:', err)
     return res.status(500).json({ error: 'Failed to fetch booking' })
@@ -161,19 +151,21 @@ router.patch('/api/bookings/:id', adminAuth, async (req, res) => {
     const values: any[] = []
     if (status){ fields.push(`status = ?`); values.push(status) }
     if (typeof cancellation_reason !== 'undefined'){ fields.push(`cancellation_reason = ?`); values.push(cancellation_reason) }
-    if (fields.length === 0) return res.status(400).json({ error: 'No updatable fields provided' })
+    if (!fields.length) return res.status(400).json({ error: 'No updatable fields provided' })
 
     values.push(id)
-    const q = `UPDATE bookings SET ${fields.join(', ')}, updated_at = NOW() WHERE id = ?`
-    const result = await query(q, values)
-    if (!result || result.affectedRows === 0) return res.status(404).json({ error: 'Booking not found' })
+    await query(`UPDATE bookings SET ${fields.join(', ')}, updated_at = NOW() WHERE id = ?`, values)
 
-    const updated = await query('SELECT * FROM bookings WHERE id = ?', [id])
+    const updatedRows = await query('SELECT * FROM bookings WHERE id = ?', [id])
+    const updatedArr = updatedRows as any[]
+    if (!updatedArr.length) return res.status(404).json({ error: 'Booking not found' })
+    const updated = updatedArr[0]
+
     if (status === 'confirmed'){
-      sendBookingConfirmation(updated.email, updated).catch(console.error)
+      sendBookingConfirmation?.(updated.email, updated)
     }
 
-    return res.json(updated[0])
+    return res.json(updated)
   }catch(err){
     console.error('DB update booking error:', err)
     return res.status(500).json({ error: 'Failed to update booking' })
@@ -185,15 +177,16 @@ router.post('/api/bookings/:id/cancel', adminAuth, async (req, res) => {
   const id = req.params.id
   const reason = req.body?.reason || 'Cancelled by admin'
   try{
-    const result = await query('UPDATE bookings SET status = ?, cancellation_reason = ?, updated_at = NOW() WHERE id = ?', ['cancelled', reason, id])
-    if (result.affectedRows === 0) return res.status(404).json({ error: 'Booking not found' })
+    await query('UPDATE bookings SET status = ?, cancellation_reason = ?, updated_at = NOW() WHERE id = ?', ['cancelled', reason, id])
 
-    const booking = await query('SELECT * FROM bookings WHERE id = ?', [id])
+    const bookingRows = await query('SELECT * FROM bookings WHERE id = ?', [id])
+    const arr = bookingRows as any[]
+    if (!arr.length) return res.status(404).json({ error: 'Booking not found' })
+    const booking = arr[0]
 
-    // Send cancellation email (async)
-    sendBookingCancellation(booking.email, booking).catch(console.error)
+    sendBookingCancellation?.(booking.email, booking)
 
-    return res.json(booking[0])
+    return res.json(booking)
   }catch(err){
     console.error('DB cancel booking error:', err)
     return res.status(500).json({ error: 'Failed to cancel booking' })

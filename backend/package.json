@@ -16,6 +16,7 @@
     "seed-admin": "ts-node src/utils/seedAdmin.ts",
     "test": "jest",
     "clean": "node -e \"require('fs').rmSync('dist', {recursive:true, force:true})\"",
+    "clean:tsconfig": "node -e \"require('fs').rmSync('tsconfig.tsbuildinfo', {force:true})\"",
     "prebuild": "npm run clean"
   },
   "dependencies": {
