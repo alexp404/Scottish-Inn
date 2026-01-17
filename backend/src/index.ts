@@ -23,36 +23,41 @@ dotenv.config()
 const app = express()
 const PORT = process.env.PORT || 5000
 const startTime = Date.now()
+function cors(res, req) {
+    const defaultOrigin = process.env.CLIENT_URL || 'https://192.168.1.130:5173';
+    const reqOrigin = req?.headers?.origin;
 
-// CORS Configuration - Allow multiple origins for development and production
-const allowedOrigins = [
-  'http://localhost:5173',
-  'http://localhost:8080',
-  'http://localhost:3000',
-  'https://scottish-inn-frontend.onrender.com',
+    // Default allowlist of trusted origins for CORS - add your production host(s) here
+    const defaultAllowed = [
+        process.env.CLIENT_URL || 'https://192.168.1.130:5173',
+        'http://127.0.0.1:3000',
+        'https://scottishinn1960.com',
+          'https://scottish-inn-frontend.onrender.com',
     'https://scottish-inn-frontend.vercel.app/',
   'https://scottish-inn-frontend-lex-09222e0b.vercel.app/',
-  process.env.FRONTEND_URL
-].filter(Boolean) // Remove any undefined values
+    ];
 
-app.use(requestId)
-app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps, curl, postman)
-    if (!origin) return callback(null, true)
-    
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true)
-    } else {
-      console.warn('CORS blocked origin:', origin)
-      callback(new Error('Not allowed by CORS'))
-    }
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}))
-app.use(bodyParser.json())
+    // Support environment-variable based allowlist (comma-separated)
+    // Example: CORS_ALLOWED_ORIGINS="https://example.com,https://app.example.com"
+    const envListRaw = process.env.CORS_ALLOWED_ORIGINS || process.env.ALLOWED_ORIGINS || '';
+    const envList = typeof envListRaw === 'string' && envListRaw.length > 0
+        ? envListRaw.split(',').map(s => s.trim()).filter(Boolean)
+        : [];
+
+    // Merge defaults and env-provided origins, deduplicate
+    const allowedOrigins = Array.from(new Set([...defaultAllowed, ...envList]));
+
+    // Choose origin to return; if incoming origin is allowed use it, else fall back to defaultOrigin
+    const originToSet = (typeof reqOrigin === 'string' && allowedOrigins.includes(reqOrigin)) ? reqOrigin : defaultOrigin;
+
+    // Set CORS headers
+    res.setHeader('Access-Control-Allow-Origin', originToSet);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,DELETE,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization, X-Api-Key, X-Client-Token, User-Agent');
+    // Ensure caches vary by Origin
+    res.setHeader('Vary', 'Origin');
+}                           
 
 // Enhanced health check endpoint
 app.get('/api/health', async (req, res) => {
@@ -79,6 +84,7 @@ app.get('/api/health', async (req, res) => {
 
 // Root endpoint
 app.get('/', (req, res) => {
+  cors(res, req)
   res.json({
     name: 'Scottish Inn & Suites API',
     version: '1.0.0',
