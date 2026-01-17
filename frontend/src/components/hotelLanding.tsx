@@ -106,6 +106,8 @@ const HotelLanding: React.FC = () => {
                 )
             )
             const subtotal = nights * selectedRoom.basePrice
+            const tax = subtotal * 0.0825 // 8.25% tax
+            const totalPrice = subtotal + tax
             const payload: BookingPayload = {
                 room_id: selectedRoom.id,
                 first_name: firstName,
@@ -186,9 +188,9 @@ const HotelLanding: React.FC = () => {
 
     // Stock hotel images (you can replace with real images later)
     const hotelImages = [
-        'https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', // Hotel lobby
-        'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', // Hotel room
-        'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'  // Hotel exterior
+        'https://i.postimg.cc/TKbsD99k/hotel-front.png',
+        'https://i.postimg.cc/68ZPv001/extended-stay.png', // Hotel lobby
+        'https://i.postimg.cc/JsXFkqqN/jacuzzi.png'
     ]
 
     // Show combined error state
@@ -294,7 +296,7 @@ const HotelLanding: React.FC = () => {
                 <div className="absolute inset-0 bg-gradient-to-r from-gold-900/70 to-babyblue-900/50 flex items-center justify-center">
                     <div className="text-center text-white px-4">
                         <motion.h1
-                            initial={{ opacity: 0, y: -30 }}
+                            initial={{ opacity: 0.5, y: -30 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.8, delay: 0.2 }}
                             className="text-4xl md:text-6xl font-bold mb-4"
@@ -303,7 +305,7 @@ const HotelLanding: React.FC = () => {
                             Scottish Inn & Suites
                         </motion.h1>
                         <motion.p
-                            initial={{ opacity: 0, y: 20 }}
+                            initial={{ opacity: 0.5, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.8, delay: 0.4 }}
                             className="text-lg md:text-xl mb-8 max-w-2xl mx-auto text-gold-100"
@@ -311,7 +313,7 @@ const HotelLanding: React.FC = () => {
                             Affordable comfort in Houston. Clean rooms, friendly service, and modern amenities at unbeatable prices.
                         </motion.p>
                         <motion.div
-                            initial={{ opacity: 0, y: 30 }}
+                            initial={{ opacity: 0.5, y: 30 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.8, delay: 0.6 }}
                             className="flex flex-col sm:flex-row gap-4 justify-center items-center"
@@ -454,7 +456,7 @@ const HotelLanding: React.FC = () => {
             {(loading || roomsLoading) && availableRooms.length === 0 && (
                 <div className="mx-auto mt-10 max-w-6xl px-4 text-center py-12">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gold-600 mx-auto"></div>
-                    <p className="mt-4 text-gray-600">Loading available rooms...</p>
+                    <p className="mt-4 text-babyblue-700 font-medium">Loading available rooms...</p>
                 </div>
             )}
 
@@ -486,7 +488,7 @@ const HotelLanding: React.FC = () => {
                                         </span>
                                     </div>
                                     <p
-                                        className="mt-2 text-sm text-gray-700"
+                                        className="mt-2 text-sm text-babyblue-900"
                                         style={{ fontFamily: 'Poppins, sans-serif' }}
                                     >
                                         {room.roomType === 'suite'
@@ -495,7 +497,7 @@ const HotelLanding: React.FC = () => {
                                                 ? 'Premium linens, Fire TV, and curated minibar for business & leisure.'
                                                 : 'Thoughtfully appointed room with high-speed Wi‑Fi and Fire TV.'}
                                     </p>
-                                    <div className="mt-3 flex items-center justify-between text-xs text-gray-600">
+                                    <div className="mt-3 flex items-center justify-between text-xs text-babyblue-700 font-medium">
                                         <span>Sleeps up to {room.capacity}</span>
                                         <span
                                             className={`rounded-full px-2 py-0.5 ${room.status === 'available'
@@ -528,7 +530,7 @@ const HotelLanding: React.FC = () => {
                 )}
 
                 {!loading && !roomsLoading && availableRooms.length === 0 && checkIn && checkOut && (
-                    <p className="mt-10 text-center text-sm text-gray-600">
+                    <p className="mt-10 text-center text-sm text-babyblue-700 font-medium">
                         No rooms available for your selected dates. Try adjusting your stay or guest count.
                     </p>
                 )}
@@ -565,7 +567,7 @@ const HotelLanding: React.FC = () => {
                                     <h3 className="text-xl font-semibold text-emerald-700">
                                         Booking Confirmed
                                     </h3>
-                                    <p className="mt-2 text-sm text-gray-600">
+                                    <p className="mt-2 text-sm text-babyblue-700">
                                         A confirmation email will arrive shortly.
                                     </p>
                                 </div>
@@ -579,7 +581,7 @@ const HotelLanding: React.FC = () => {
                                             >
                                                 Room {selectedRoom.roomNumber}
                                             </h2>
-                                            <p className="text-xs text-gray-500">
+                                            <p className="text-xs text-babyblue-600">
                                                 {checkIn} &mdash; {checkOut} · {guests} guest
                                                 {guests > 1 ? 's' : ''}
                                             </p>
@@ -590,35 +592,38 @@ const HotelLanding: React.FC = () => {
                                                 setShowBookingModal(false)
                                                 setSelectedRoom(null)
                                             }}
-                                            className="text-gray-400 hover:text-gray-600"
+                                            className="text-babyblue-400 hover:text-babyblue-600"
                                         >
                                             ✕
                                         </button>
                                     </div>
 
-                                    <div className="mb-4 rounded-2xl bg-gold-50/80 p-3 text-xs text-gray-700">
+                                    <div className="mb-4 rounded-2xl bg-gold-50/80 p-3 text-xs text-babyblue-900">
                                         <div className="flex justify-between">
                                             <span>Nights</span>
                                             <span>{nights || 1}</span>
                                         </div>
                                         <div className="mt-1 flex justify-between">
                                             <span>Rate / night</span>
-                                            <span>${selectedRoom.basePrice.toFixed(0)}</span>
+                                            <span>${selectedRoom.basePrice.toFixed(2)}</span>
                                         </div>
-                                        <div className="mt-2 border-t border-gold-200 pt-2 flex justify-between font-semibold text-gold-900">
-                                            <span>Estimated total</span>
-                                            <span>
-                                                $
-                                                {(
-                                                    (nights || 1) * selectedRoom.basePrice
-                                                ).toFixed(0)}
-                                            </span>
+                                        <div className="mt-2 flex justify-between font-semibold text-gold-900 border-t border-gold-200 pt-2">
+                                            <span>Subtotal</span>
+                                            <span>${((nights || 1) * selectedRoom.basePrice).toFixed(2)}</span>
+                                        </div>
+                                        <div className="mt-1 flex justify-between text-babyblue-700">
+                                            <span>Tax (8.25%)</span>
+                                            <span>${(((nights || 1) * selectedRoom.basePrice) * 0.0825).toFixed(2)}</span>
+                                        </div>
+                                        <div className="mt-2 flex justify-between font-bold text-lg text-gold-900 border-t border-gold-200 pt-2">
+                                            <span>Grand Total</span>
+                                            <span>${(((nights || 1) * selectedRoom.basePrice) + (((nights || 1) * selectedRoom.basePrice) * 0.0825)).toFixed(2)}</span>
                                         </div>
                                     </div>
 
                                     <div className="space-y-3 text-sm">
                                         <div>
-                                            <label className="block text-xs font-semibold text-gray-700">
+                                            <label className="block text-xs font-semibold text-babyblue-900">
                                                 First name
                                             </label>
                                             <input
@@ -629,7 +634,7 @@ const HotelLanding: React.FC = () => {
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-xs font-semibold text-gray-700">
+                                            <label className="block text-xs font-semibold text-babyblue-900">
                                                 Last name
                                             </label>
                                             <input
@@ -640,7 +645,7 @@ const HotelLanding: React.FC = () => {
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-xs font-semibold text-gray-700">
+                                            <label className="block text-xs font-semibold text-babyblue-900">
                                                 Email
                                             </label>
                                             <input
@@ -662,7 +667,7 @@ const HotelLanding: React.FC = () => {
                                                     setShowBookingModal(false)
                                                     setSelectedRoom(null)
                                                 }}
-                                                className="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50"
+                                                className="flex-1 rounded-lg border border-babyblue-300 bg-white px-3 py-2 text-xs font-semibold text-babyblue-900 hover:bg-babyblue-50"
                                             >
                                                 Cancel
                                             </button>
@@ -713,7 +718,122 @@ const HotelLanding: React.FC = () => {
                     ))}
                 </div>
             </motion.section>
+
+            {/* Location Section with Google Map */}
+            <motion.section
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="mx-auto max-w-6xl px-4 mt-16 mb-16"
+            >
+                <h2 className="text-center text-2xl font-semibold text-gold-800 mb-8" style={{ fontFamily: 'Playfair Display, serif' }}>
+                    Find Us Here
+                </h2>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                    {/* Contact Information */}
+                    <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-babyblue-200 p-8 shadow-lg">
+                        <h3 className="text-xl font-semibold text-gold-900 mb-6" style={{ fontFamily: 'Playfair Display, serif' }}>
+                            Scottish Inn & Suites - 1960
+                        </h3>
+                        <div className="space-y-4 text-babyblue-900">
+                            <div>
+                                <h4 className="font-semibold text-gold-800 mb-1">Address</h4>
+                                <p className="text-sm">2531 FM 1960 Rd, Houston, TX 77073</p>
+                            </div>
+                            <div>
+                                <h4 className="font-semibold text-gold-800 mb-1">Phone</h4>
+                                <a href="tel:2818219900" className="text-sm text-babyblue-700 hover:text-gold-600 transition-colors">
+                                    (281) 821-9900
+                                </a>
+                            </div>
+                            <div>
+                                <h4 className="font-semibold text-gold-800 mb-1">Hours</h4>
+                                <p className="text-sm">Check-in: 2:00 PM</p>
+                                <p className="text-sm">Check-out: 11:00 AM</p>
+                                <p className="text-sm">24/7 Front Desk Available</p>
+                            </div>
+                            <button
+                                onClick={() => window.open('https://www.google.com/maps/dir/?api=1&destination=2531+FM+1960+Rd,+Houston,TX+77073', '_blank')}
+                                className="mt-4 w-full bg-gradient-to-r from-gold-600 to-babyblue-500 hover:from-gold-700 hover:to-babyblue-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+                            >
+                                Get Directions
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Google Map */}
+                    <div className="overflow-hidden rounded-2xl border border-babyblue-200 shadow-lg h-96">
+                        <iframe
+                            width="100%"
+                            height="100%"
+                            frameBorder="0"
+                            style={{ border: 0, borderRadius: '1rem' }}
+                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3455.898287268833!2d-95.4907891!3d29.899556!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8640c7f6e5a5a5a5%3A0x5a5a5a5a5a5a5a5a!2s2531%20FM%201960%20Rd%2C%20Houston%2C%20TX%2077073!5e0!3m2!1sen!2sus!4v1234567890"
+                            allowFullScreen=""
+                            loading="lazy"
+                            referrerPolicy="no-referrer-when-downgrade"
+                            title="Scottish Inn & Suites Location"
+                        />
+                    </div>
+                </div>
+            </motion.section>
+
+       <footer className="bg-gold-900 text-white">
+                <div className="max-w-6xl mx-auto px-4 py-12">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        {/* Contact Info */}
+                        <div>
+                            <h3 className="text-lg font-semibold mb-4" style={{ fontFamily: 'Playfair Display, serif' }}>
+                                Contact Us
+                            </h3>
+                            <div className="space-y-2 text-gold-100">
+                                <p>2531 FM 1960 Rd</p>
+                                <p>Houston, TX 77073</p>
+                                <a href="tel:2818219900" className="block hover:text-white transition-colors">
+                                    (281) 821-9900
+                                </a>
+                            </div>
+                        </div>
+
+                        {/* Quick Links */}
+                        <div>
+                            <h3 className="text-lg font-semibold mb-4" style={{ fontFamily: 'Playfair Display, serif' }}>
+                                Quick Links
+                            </h3>
+                            <div className="space-y-2">
+                                {navigation.map((item) => (
+                                    <Link
+                                        key={item.name}
+                                        to={item.href}
+                                        className="block text-gold-100 hover:text-white transition-colors"
+                                    >
+                                        {item.name}
+                                    </Link>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Amenities */}
+                        <div>
+                            <h3 className="text-lg font-semibold mb-4" style={{ fontFamily: 'Playfair Display, serif' }}>
+                                Amenities
+                            </h3>
+                            <div className="space-y-1 text-gold-100 text-sm">
+                                <p>?? Free Wi-Fi</p>
+                                <p>?? Fire TV Entertainment</p>
+                                <p>?? Free Parking</p>
+                                <p>?? 24/7 Front Desk</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="border-t border-gold-800 mt-8 pt-8 text-center text-gold-200 text-sm">
+                        <p>&copy; 2024 Scottish Inn & Suites. All rights reserved.</p>
+                    </div>
+                </div>
+            </footer>
         </div>
+
     )
 }
 

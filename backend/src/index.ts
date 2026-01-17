@@ -27,6 +27,7 @@ const startTime = Date.now()
 // CORS Configuration - Allow multiple origins for development and production
 const allowedOrigins = [
   'http://localhost:5173',
+  'http://localhost:8080',
   'http://localhost:3000',
   'https://scottish-inn-frontend.onrender.com',
   process.env.FRONTEND_URL

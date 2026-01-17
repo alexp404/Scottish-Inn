@@ -43,9 +43,9 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
       params.set('fm', 'webp')
     }
 
-    // Ensure quality is set
+    // Ensure quality is set to 90 for sharper images
     if (!params.has('q')) {
-      params.set('q', '80')
+      params.set('q', '90')
     }
 
     // Ensure auto optimization
@@ -66,7 +66,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
         const params = new URLSearchParams(url.split('?')[1] || '')
         params.set('w', w.toString())
         params.set('auto', 'format,compress')
-        params.set('q', '80')
+        params.set('q', '90')
         if (format === 'webp') {
           params.set('fm', 'webp')
         }
@@ -108,7 +108,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
         onError={() => setError(true)}
         className={`
           transition-opacity duration-500
-          ${loaded ? 'opacity-100' : 'opacity-0'}
+          ${loaded ? 'opacity-100' : 'opacity-80'}
           ${error ? 'hidden' : 'block'}
           w-full h-full object-cover
         `}
@@ -116,7 +116,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
 
       {/* Loading placeholder with blur effect */}
       {!loaded && !error && (
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-300 animate-pulse" />
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 animate-pulse" />
       )}
 
       {/* Error fallback */}

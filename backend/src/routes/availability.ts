@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { pool } from '../utils/db'
+import { query, queryOne } from '../utils/db'
 
 const router = Router()
 
@@ -31,45 +31,52 @@ router.get('/api/availability', async (req, res) => {
     return res.status(400).json({ error: 'Check-out date must be after check-in date' })
   }
 
-  try{
-    // Rooms that can fit guests and match type, and NOT booked overlapping the requested range
-    const filters: string[] = ['r.capacity >= $1']
-    const params: any[] = [guests]
-    let idx = 2
-    if (roomType) { filters.push(`LOWER(r.room_type) = LOWER($${idx++})`); params.push(roomType) }
+  try {
+    // Convert dates to MySQL format (YYYY-MM-DD)
+    const checkInStr = checkIn.split('T')[0]
+    const checkOutStr = checkOut.split('T')[0]
 
-    const whereRooms = filters.length ? `WHERE ${filters.join(' AND ')}` : ''
+    // Rooms that can fit guests and match type, and NOT booked overlapping the requested range
+    const filters: string[] = ['r.capacity >= ?']
+    const params: any[] = [guests]
+    
+    if (roomType) {
+      filters.push('LOWER(r.room_type) = LOWER(?)')
+      params.push(roomType)
+    }
+
+    const whereRooms = `WHERE ${filters.join(' AND ')}`
 
     // Map database columns to frontend interface (snake_case -> camelCase)
     const baseQuery = `
       SELECT 
         r.id,
-        r.room_number as "roomNumber",
-        r.room_type as "roomType",
+        r.room_number as roomNumber,
+        r.room_type as roomType,
         r.capacity,
-        r.base_price as "basePrice",
+        r.base_price as basePrice,
         r.status,
-        COALESCE(r.images, '[]'::jsonb) as images
+        COALESCE(r.images, JSON_ARRAY()) as images
       FROM rooms r
       ${whereRooms}
       AND NOT EXISTS (
         SELECT 1 FROM bookings b
         WHERE b.room_id = r.id
           AND b.status IN ('pending','confirmed','checked_in')
-          AND b.check_in_date < $${idx}::date
-          AND b.check_out_date > $${idx+1}::date
+          AND b.check_in_date < ?
+          AND b.check_out_date > ?
       )
       ORDER BY r.base_price ASC, r.room_number ASC
-      LIMIT $${idx+2} OFFSET $${idx+3}
+      LIMIT ? OFFSET ?
     `
 
     const offset = (page - 1) * pageSize
-    params.push(checkOut, checkIn, pageSize, offset)
+    params.push(checkOutStr, checkInStr, pageSize, offset)
 
-    const result = await pool.query(baseQuery, params)
+    const rooms = await query(baseQuery, params) as any[]
 
     // Convert numeric strings to numbers for frontend
-    const rooms = result.rows.map((r: any) => ({
+    const formattedRooms = rooms.map((r: any) => ({
       ...r,
       basePrice: Number(r.basePrice)
     }))
@@ -82,18 +89,18 @@ router.get('/api/availability', async (req, res) => {
         SELECT 1 FROM bookings b
         WHERE b.room_id = r.id
           AND b.status IN ('pending','confirmed','checked_in')
-          AND b.check_in_date < $${idx}::date
-          AND b.check_out_date > $${idx+1}::date
+          AND b.check_in_date < ?
+          AND b.check_out_date > ?
       )
     `
     // Only pass the base filter params (guests, roomType if present) + dates
-    const countParams = params.slice(0, idx - 1)
-    countParams.push(checkOut, checkIn)
-    const totalRes = await pool.query(countQuery, countParams)
-    const total = Number(totalRes.rows[0]?.total || 0)
+    const countParams = params.slice(0, -4)
+    countParams.push(checkOutStr, checkInStr)
+    const totalResult = await queryOne(countQuery, countParams) as any
+    const total = Number(totalResult?.total || 0)
 
-    return res.json({ rooms, page, pageSize, total })
-  }catch(err){
+    return res.json({ rooms: formattedRooms, page, pageSize, total })
+  } catch (err) {
     console.error('Availability error:', err)
     return res.status(500).json({ error: 'Failed to load availability' })
   }

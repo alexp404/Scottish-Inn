@@ -1,6 +1,6 @@
 import fs from 'fs'
 import path from 'path'
-import { pool } from './db'
+import { getPool, queryOne, query, closePool } from './db'
 
 async function run() {
   const file = path.resolve(__dirname, '..', 'database', 'schema.sql')

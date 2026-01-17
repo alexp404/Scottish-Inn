@@ -42,6 +42,9 @@ export default function BookingForm({ room, onClose, onBooked }: Props) {
 
   const nights = calcNights()
   const subtotal = nights * room.basePrice
+  const TAX_RATE = 0.0825 // 8.25%
+  const tax = Math.round(subtotal * TAX_RATE * 100) / 100
+  const grandTotal = subtotal + tax
 
   function validate(){
     const errs: Record<string,string> = {}
@@ -155,7 +158,10 @@ export default function BookingForm({ room, onClose, onBooked }: Props) {
 
       <div className="summary" style={{ marginTop: 8 }}>
         <div className="row"><span>Nights</span><strong>{nights}</strong></div>
-        <div className="row total"><span>Subtotal</span><strong>${subtotal.toFixed(2)}</strong></div>
+        <div className="row"><span>Rate / night</span><strong>${room.basePrice.toFixed(2)}</strong></div>
+        <div className="row total" style={{ borderTop: '1px solid var(--border)', paddingTop: 8, marginTop: 8 }}><span>Subtotal</span><strong>${subtotal.toFixed(2)}</strong></div>
+        <div className="row"><span>Tax (8.25%)</span><strong>${tax.toFixed(2)}</strong></div>
+        <div className="row total" style={{ fontWeight: 'bold', fontSize: '1.1em' }}><span>Grand Total</span><strong>${grandTotal.toFixed(2)}</strong></div>
       </div>
 
       {error && <div role="alert" style={{ color: 'red', marginTop: 8 }}>{error}</div>}

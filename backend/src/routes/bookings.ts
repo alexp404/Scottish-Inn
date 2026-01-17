@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { v4 as uuidv4 } from 'uuid'
-import { pool } from '../utils/db'
+import { query, getPool } from '../utils/db'
 import adminAuth from '../middleware/adminAuth'
 import { sendBookingConfirmation, sendBookingCancellation } from '../services/emailService'
 
@@ -31,7 +31,7 @@ function validateBookingPayload(body: any){
   return errors
 }
 
-// Create booking - persist to Postgres
+// Create booking - persist to MySQL
 router.post('/api/bookings', async (req, res) => {
   const body = req.body
   const errors = validateBookingPayload(body)
@@ -41,8 +41,8 @@ router.post('/api/bookings', async (req, res) => {
 
   // Ensure room exists
   try{
-    const roomRes = await pool.query('SELECT id FROM rooms WHERE id = $1', [body.room_id])
-    if (roomRes.rowCount === 0){
+    const rooms = await query('SELECT id FROM rooms WHERE id = ?', [body.room_id])
+    if (!rooms || rooms.length === 0){
       return res.status(400).json({ errors: { room_id: 'room_id does not exist' } })
     }
   }catch(err){
@@ -51,16 +51,23 @@ router.post('/api/bookings', async (req, res) => {
   }
 
   try{
+    const id = uuidv4()
+    const TAX_RATE = 0.0825 // 8.25% tax
+    const subtotal = Number(body.subtotal)
+    const tax = Math.round(subtotal * TAX_RATE * 100) / 100 // Round to 2 decimals
+    const totalPrice = subtotal + tax
+
     const insertQuery = `
       INSERT INTO bookings (
-        room_id, user_id, check_in_date, check_out_date, guest_count,
+        id, room_id, user_id, check_in_date, check_out_date, guest_count,
         first_name, last_name, email, phone_number, special_requests,
-        subtotal, tax, total_price, paid, payment_method, payment_reference
-      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
-      RETURNING *
+        subtotal, tax, total_price, paid, payment_method, payment_reference,
+        confirmation_id, status
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `
 
     const values = [
+      id,
       body.room_id,
       body.user_id || null,
       body.check_in_date,
@@ -71,16 +78,21 @@ router.post('/api/bookings', async (req, res) => {
       body.email,
       body.phone_number || null,
       body.special_requests || null,
-      Number(body.subtotal),
-      body.tax ?? 0,
-      (Number(body.subtotal) + (body.tax ?? 0)),
+      subtotal,
+      tax,
+      totalPrice,
       body.paid ?? false,
       body.payment_method || null,
-      body.payment_reference || null
+      body.payment_reference || null,
+      `CONF-${Date.now()}`,
+      'pending'
     ]
 
-    const result = await pool.query(insertQuery, values)
-    const booking = result.rows[0]
+    await query(insertQuery, values)
+
+    // Fetch the created booking
+    const bookingResult = await query('SELECT * FROM bookings WHERE id = ?', [id])
+    const booking = bookingResult[0]
 
     // Send confirmation email (async)
     sendBookingConfirmation(booking.email, booking).catch(console.error)
@@ -102,21 +114,22 @@ router.get('/api/bookings', adminAuth, async (req, res) => {
 
     const where: string[] = []
     const params: any[] = []
-    let idx = 1
-    if (status){ where.push(`status = $${idx++}`); params.push(status) }
-    if (search){ where.push(`(first_name ILIKE $${idx} OR last_name ILIKE $${idx} OR email ILIKE $${idx})`); params.push('%' + search + '%'); idx++ }
+    if (status){ where.push(`status = ?`); params.push(status) }
+    if (search){ where.push(`(first_name LIKE ? OR last_name LIKE ? OR email LIKE ?)`); params.push(`%${search}%`, `%${search}%`, `%${search}%`) }
 
     const whereClause = where.length ? `WHERE ${where.join(' AND ')}` : ''
     const offset = (page - 1) * pageSize
 
-    const q = `SELECT * FROM bookings ${whereClause} ORDER BY created_at DESC LIMIT $${idx++} OFFSET $${idx++}`
+    const q = `SELECT * FROM bookings ${whereClause} ORDER BY created_at DESC LIMIT ? OFFSET ?`
+    const countParams = params.slice()
     params.push(pageSize, offset)
 
-    const result = await pool.query(q, params)
-    const countResult = await pool.query(`SELECT COUNT(*) as total FROM bookings ${whereClause}`, params.slice(0, params.length-2))
-    const total = Number(countResult.rows[0].total)
+    const result = await query(q, params)
+    const countQuery = `SELECT COUNT(*) as total FROM bookings ${whereClause}`
+    const countResult = await query(countQuery, countParams)
+    const total = Number(countResult[0]?.total || 0)
 
-    return res.json({ bookings: result.rows, page, pageSize, total })
+    return res.json({ bookings: result, page, pageSize, total })
   }catch(err){
     console.error('DB fetch bookings error:', err)
     return res.status(500).json({ error: 'Failed to fetch bookings' })
@@ -127,9 +140,9 @@ router.get('/api/bookings', adminAuth, async (req, res) => {
 router.get('/api/bookings/:id', adminAuth, async (req, res) => {
   const id = req.params.id
   try{
-    const result = await pool.query('SELECT * FROM bookings WHERE id = $1', [id])
-    if (result.rowCount === 0) return res.status(404).json({ error: 'Booking not found' })
-    return res.json(result.rows[0])
+    const result = await query('SELECT * FROM bookings WHERE id = ?', [id])
+    if (!result || result.length === 0) return res.status(404).json({ error: 'Booking not found' })
+    return res.json(result[0])
   }catch(err){
     console.error('DB get booking error:', err)
     return res.status(500).json({ error: 'Failed to fetch booking' })
@@ -146,22 +159,21 @@ router.patch('/api/bookings/:id', adminAuth, async (req, res) => {
   try{
     const fields: string[] = []
     const values: any[] = []
-    let idx = 1
-    if (status){ fields.push(`status = $${idx++}`); values.push(status) }
-    if (typeof cancellation_reason !== 'undefined'){ fields.push(`cancellation_reason = $${idx++}`); values.push(cancellation_reason) }
+    if (status){ fields.push(`status = ?`); values.push(status) }
+    if (typeof cancellation_reason !== 'undefined'){ fields.push(`cancellation_reason = ?`); values.push(cancellation_reason) }
     if (fields.length === 0) return res.status(400).json({ error: 'No updatable fields provided' })
 
     values.push(id)
-    const q = `UPDATE bookings SET ${fields.join(', ')}, updated_at = NOW() WHERE id = $${idx} RETURNING *`
-    const result = await pool.query(q, values)
-    if (result.rowCount === 0) return res.status(404).json({ error: 'Booking not found' })
+    const q = `UPDATE bookings SET ${fields.join(', ')}, updated_at = NOW() WHERE id = ?`
+    const result = await query(q, values)
+    if (!result || result.affectedRows === 0) return res.status(404).json({ error: 'Booking not found' })
 
-    const updated = result.rows[0]
+    const updated = await query('SELECT * FROM bookings WHERE id = ?', [id])
     if (status === 'confirmed'){
       sendBookingConfirmation(updated.email, updated).catch(console.error)
     }
 
-    return res.json(updated)
+    return res.json(updated[0])
   }catch(err){
     console.error('DB update booking error:', err)
     return res.status(500).json({ error: 'Failed to update booking' })
@@ -173,14 +185,15 @@ router.post('/api/bookings/:id/cancel', adminAuth, async (req, res) => {
   const id = req.params.id
   const reason = req.body?.reason || 'Cancelled by admin'
   try{
-    const result = await pool.query('UPDATE bookings SET status = $1, cancellation_reason = $2, updated_at = NOW() WHERE id = $3 RETURNING *', ['cancelled', reason, id])
-    if (result.rowCount === 0) return res.status(404).json({ error: 'Booking not found' })
-    const booking = result.rows[0]
+    const result = await query('UPDATE bookings SET status = ?, cancellation_reason = ?, updated_at = NOW() WHERE id = ?', ['cancelled', reason, id])
+    if (result.affectedRows === 0) return res.status(404).json({ error: 'Booking not found' })
+
+    const booking = await query('SELECT * FROM bookings WHERE id = ?', [id])
 
     // Send cancellation email (async)
     sendBookingCancellation(booking.email, booking).catch(console.error)
 
-    return res.json(booking)
+    return res.json(booking[0])
   }catch(err){
     console.error('DB cancel booking error:', err)
     return res.status(500).json({ error: 'Failed to cancel booking' })

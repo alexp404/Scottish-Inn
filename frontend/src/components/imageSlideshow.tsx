@@ -48,9 +48,9 @@ const ImageSlideshow: React.FC<ImageSlideshowProps> = ({
                 <motion.div
                     key={currentIndex}
                     className="absolute inset-0"
-                    initial={{ opacity: 0 }}
+                    initial={{ opacity: 1 }}
                     animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
+                    exit={{ opacity: .8 }}
                     transition={{ duration: 0.5 }}
                 >
                     <OptimizedImage
@@ -68,7 +68,7 @@ const ImageSlideshow: React.FC<ImageSlideshowProps> = ({
             {/* Navigation Arrows */}
             <button
                 onClick={goToPrevious}
-                className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 rounded-full p-2 opacity-80 group-hover:opacity-100 transition-opacity duration-200"
                 aria-label="Previous image"
             >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -78,7 +78,7 @@ const ImageSlideshow: React.FC<ImageSlideshowProps> = ({
 
             <button
                 onClick={goToNext}
-                className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 rounded-full p-2 opacity-80 group-hover:opacity-100 transition-opacity duration-200"
                 aria-label="Next image"
             >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

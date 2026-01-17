@@ -87,7 +87,8 @@ export async function fetchRooms(): Promise<Room[]> {
   return data.rooms
 }
 
-export async function fetchAvailability(params: URLSearchParams){
+export async function fetchAvailability(params: URLSearchParams): Promise<{ rooms: Room[], page: number, pageSize: number, total: number }>
+{
   const qs = params ? `?${params.toString()}` : ''
   return request<{ rooms: Room[], page: number, pageSize: number, total: number }>(`/api/availability${qs}`)
 }
