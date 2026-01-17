@@ -30,6 +30,7 @@ const allowedOrigins = [
   'http://localhost:8080',
   'http://localhost:3000',
   'https://scottish-inn-frontend.onrender.com',
+  'https://scottish-inn-frontend.vercel.app/',
   process.env.FRONTEND_URL
 ].filter(Boolean) // Remove any undefined values
 
