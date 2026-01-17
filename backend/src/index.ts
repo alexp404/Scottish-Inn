@@ -1,5 +1,4 @@
 import express from 'express'
-import cors from 'cors'
 import bodyParser from 'body-parser'
 import dotenv from 'dotenv'
 import firetvRoutes from './routes/firetv'
@@ -24,12 +23,12 @@ const app = express()
 const PORT = process.env.PORT || 5000
 const startTime = Date.now()
 function cors(res, req) {
-    const defaultOrigin = process.env.CLIENT_URL || 'https://192.168.1.130:5173';
+    const defaultOrigin = process.env.CLIENT_URL || 'https://localhost:5173';
     const reqOrigin = req?.headers?.origin;
 
     // Default allowlist of trusted origins for CORS - add your production host(s) here
     const defaultAllowed = [
-        process.env.CLIENT_URL || 'https://192.168.1.130:5173',
+        process.env.CLIENT_URL || 'https://localhost:5173',
         'http://127.0.0.1:3000',
         'https://scottishinn1960.com',
           'https://scottish-inn-frontend.onrender.com',
@@ -119,7 +118,6 @@ async function start() {
     const ok = await testConnection()
     console.log('? Database connection OK:', ok)
     console.log('?? Environment:', process.env.NODE_ENV || 'development')
-    console.log('?? Allowed origins:', allowedOrigins.join(', '))
   } catch (err) {
     console.warn('??  Database connection failed. Make sure migrations have run and DATABASE_URL is correct.', err)
   }
