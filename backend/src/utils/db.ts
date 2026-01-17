@@ -5,6 +5,7 @@ dotenv.config()
 
 
 const dbConfig: any = {
+  host: process.env.DB_HOST || '74.208.225.120',
   user: process.env.DB_USER || 'admin',
   password: process.env.DB_PASSWORD || '462Nn5461020!',
   database: process.env.DB_NAME || 'hotelDB',

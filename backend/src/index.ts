@@ -1,6 +1,6 @@
-import express from 'express'
-import bodyParser from 'body-parser'
 import dotenv from 'dotenv'
+dotenv.config()
+import express from 'express'
 import firetvRoutes from './routes/firetv'
 import roomsRoutes from './routes/rooms'
 import bookingsRoutes from './routes/bookings'
@@ -17,11 +17,6 @@ import requestId from './middleware/requestId'
 import errorHandler from './middleware/errorHandler'
 import { testConnection } from './utils/db'
 
-dotenv.config()
-
-const app = express()
-const PORT = process.env.PORT || 5000
-const startTime = Date.now()
 function cors(res, req) {
     const defaultOrigin = process.env.CLIENT_URL || 'https://localhost:5173';
     const reqOrigin = req?.headers?.origin;
@@ -31,9 +26,11 @@ function cors(res, req) {
         process.env.CLIENT_URL || 'https://localhost:5173',
         'http://127.0.0.1:3000',
         'https://scottishinn1960.com',
-          'https://scottish-inn-frontend.onrender.com',
-    'https://scottish-inn-frontend.vercel.app/',
-  'https://scottish-inn-frontend-lex-09222e0b.vercel.app/',
+        'https://scottish-inn-frontend.onrender.com',
+        'https://scottish-inn-frontend.vercel.app',
+        'https://scottish-inn-frontend-lex-09222e0b.vercel.app',
+        `https://*.vercel.app`,
+       
     ];
 
     // Support environment-variable based allowlist (comma-separated)
@@ -56,10 +53,16 @@ function cors(res, req) {
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization, X-Api-Key, X-Client-Token, User-Agent');
     // Ensure caches vary by Origin
     res.setHeader('Vary', 'Origin');
-}                           
+}
+
+const app = express()
+const PORT = process.env.PORT || 5000
+const USE_SSL = process.env.USE_SSL === 'false' ? false : true;
+const startTime = Date.now()
 
 // Enhanced health check endpoint
 app.get('/api/health', async (req, res) => {
+    cors(res, req);
   try {
     const dbOk = await testConnection()
     const uptime = Math.floor((Date.now() - startTime) / 1000)
@@ -112,6 +115,41 @@ app.use('/', roomsRoutes)
 app.use('/', bookingsRoutes)
 
 app.use(errorHandler)
+
+// CORS Configuration - Allow multiple origins for development and production
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:8080',
+  'http://localhost:3000',
+  'https://scottish-inn-frontend.onrender.com',
+  'https://scottish-inn-frontend.vercel.app',
+  'https://scottish-inn-frontend-lex-09222e0b.vercel.app',
+  process.env.FRONTEND_URL
+].filter(Boolean)
+
+app.use(requestId)
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl, postman)
+    if (!origin) return callback(null, true)
+    
+    // Remove trailing slash from origin for comparison
+    const normalizedOrigin = origin.replace(/\/$/, '')
+    const normalizedAllowed = allowedOrigins.map(o => o.replace(/\/$/, ''))
+    
+    if (normalizedAllowed.indexOf(normalizedOrigin) !== -1) {
+      console.log('✅ CORS allowed origin:', origin)
+      callback(null, true)
+    } else {
+      console.warn('❌ CORS blocked origin:', origin)
+      console.warn('📋 Allowed origins:', allowedOrigins)
+      callback(new Error('Not allowed by CORS'))
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}))
 
 async function start() {
   try {
