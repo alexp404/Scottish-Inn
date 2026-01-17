@@ -115,18 +115,18 @@ async function start() {
     console.log('?? Environment:', process.env.NODE_ENV || 'development')
     console.log('?? Allowed origins:', allowedOrigins.join(', '))
   } catch (err) {
-    console.warn(
-      '??  Database connection failed. Make sure migrations have run and DATABASE_URL is correct.',
-      err
-    )
+    console.warn('??  Database connection failed. Make sure migrations have run and DATABASE_URL is correct.', err)
   }
 
-  app.listen(PORT, () => {
-    console.log(`?? Backend API running on http://localhost:${PORT}`)
-    console.log(`?? Health check: http://localhost:${PORT}/api/health`)
-  })
+  if (!process.env.SERVERLESS_ENV) {
+    app.listen(PORT, () => {
+      console.log(`?? Backend API running on http://localhost:${PORT}`)
+      console.log(`?? Health check: http://localhost:${PORT}/api/health`)
+    })
+  }
 }
 
 start()
 
 export { app }
+export default app
