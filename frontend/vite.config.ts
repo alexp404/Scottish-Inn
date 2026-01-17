@@ -14,6 +14,6 @@ export default defineConfig({
   },
   server: {
       port: 5173,
-      allowedHosts: ['.localhost', '.localdomain', '.minerals-telecommunications-banners-modems.trycloudflare.com']
+      allowedHosts: ['.localhost', '.localdomain', '.minerals-telecommunications-banners-modems.trycloudflare.com', '*.vercel.app']
   }
 })
