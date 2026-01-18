@@ -3,7 +3,7 @@ import { Room, DeviceStatus, FireTVChannel } from '../types'
 // Vite exposes env vars via import.meta.env (not process.env)
 // Default to localhost in development, production URL in production
 const API_BASE = import.meta.env.VITE_API_URL || 
-  (import.meta.env.DEV ? 'http://localhost:5000' : 'https://scottish-inn-backend.onrender.com')
+  (import.meta.env.DEV ? 'http://localhost:5000' : 'https://localhost:5000')
 const ADMIN_TOKEN = import.meta.env.VITE_ADMIN_TOKEN || 'admin-secret'
 
 // Log API configuration in development only

@@ -3,7 +3,6 @@ import mysql from 'mysql2/promise'
 
 dotenv.config()
 
-
 const dbConfig: any = {
   host: process.env.DB_HOST || '74.208.225.120',
   user: process.env.DB_USER || 'admin',
@@ -15,14 +14,26 @@ const dbConfig: any = {
   queueLimit: 0,
 }
 
-let mysqlPool: mysql.Pool | null = null
+let pool: mysql.Pool | null = null
 
 export function getPool(): mysql.Pool {
-  if (!mysqlPool) {
+  if (!pool) {
     console.log('[Database] Creating MySQL connection pool...')
-    mysqlPool = mysql.createPool(dbConfig)
+    pool = mysql.createPool(dbConfig)
   }
-  return mysqlPool
+  return pool
+}
+
+export const pool = {
+  async query(sql: string, params: any[] = []) {
+    const connection = await getPool().getConnection()
+    try {
+      const [rows] = await connection.query(sql, params)
+      return { rows: rows as any[], rowCount: Array.isArray(rows) ? rows.length : 0 }
+    } finally {
+      connection.release()
+    }
+  }
 }
 
 export async function testConnection() {
@@ -32,7 +43,31 @@ export async function testConnection() {
     conn.release()
     return true
   } catch (err) {
+    console.error('Database connection test failed:', err)
     return false
+  }
+}
+
+export async function query(sql: string, params: any[] = []) {
+  const connection = await getPool().getConnection()
+  try {
+    const [rows] = await connection.query(sql, params)
+    return rows
+  } finally {
+    connection.release()
+  }
+}
+
+export async function queryOne(sql: string, params: any[] = []) {
+  const rows: any = await query(sql, params)
+  return Array.isArray(rows) && rows.length > 0 ? rows[0] : null
+}
+
+export async function closePool() {
+  if (pool) {
+    await getPool().end()
+    pool = null
+    console.log('🔒 [Database] Connection pool closed')
   }
 }
 
@@ -40,7 +75,7 @@ export async function initializeDatabase() {
   try {
     const testPool = getPool()
     const connection = await testPool.getConnection()
-    console.log('[Database] Connection established successfully.')
+    console.log('[Database] MySQL connection established successfully.')
     try {
       const [databases] = await connection.query('SHOW DATABASES LIKE ?', [dbConfig.database])
       if (Array.isArray(databases) && databases.length === 0) {
@@ -64,39 +99,4 @@ export async function initializeDatabase() {
   }
 }
 
-export async function query(sql: string, params: any[] = []) {
-  const connection = await getPool().getConnection()
-  try {
-    const [rows] = await connection.query(sql, params)
-    return rows
-  } finally {
-    connection.release()
-  }
-}
-
-export async function queryOne(sql: string, params: any[] = []) {
-  const rows: any = await query(sql, params)
-  return Array.isArray(rows) && rows.length > 0 ? rows[0] : null
-}
-
-export async function closePool() {
-  if (mysqlPool) {
-    await mysqlPool.end()
-    mysqlPool = null
-    console.log('🔒 [Database] Connection pool closed')
-  }
-}
-
-function toMySqlParams(sql: string): string {
-  return sql.replace(/\$\d+/g, '?')
-}
-
-export const pool: any = {
-  async query(sql: string, params: any[] = []) {
-    const converted = toMySqlParams(sql)
-    const rows = await query(converted, params)
-    return { rows, rowCount: Array.isArray(rows) ? rows.length : 0 }
-  }
-}
-
-export default { getPool, query, queryOne, closePool, initializeDatabase }
+export default { getPool, query, queryOne, closePool, initializeDatabase, pool }

@@ -18,6 +18,7 @@ async function run() {
     process.exit(0)
   } catch (err: any) {
     console.error('Migration error:', err?.message ?? err)
+    if (err?.stack) console.error(err.stack)
     process.exit(1)
   }
 }

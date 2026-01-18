@@ -3,28 +3,16 @@ import { query } from '../utils/db'
 
 const router = Router()
 
-// GET /api/rooms - fetch from MySQL database
 router.get('/api/rooms', async (req, res) => {
   try {
-    const rooms = await query(`
+    const rows = await query(`
       SELECT 
-        id,
-        room_number as roomNumber,
-        room_type as roomType,
-        capacity,
-        base_price as basePrice,
-        status,
+        id, room_number as roomNumber, room_type as roomType,
+        capacity, base_price as basePrice, status,
         COALESCE(images, JSON_ARRAY()) as images
-      FROM rooms
-      ORDER BY room_number ASC
+      FROM rooms ORDER BY room_number ASC
     `)
-    
-    // Convert room prices from strings to numbers
-    const formatted = (rooms as any[]).map(r => ({
-      ...r,
-      basePrice: Number(r.basePrice)
-    }))
-    
+    const formatted = (rows as any[]).map((r: any) => ({ ...r, basePrice: Number(r.basePrice) }))
     res.json({ rooms: formatted })
   } catch (err) {
     console.error('Error fetching rooms:', err)
@@ -32,26 +20,18 @@ router.get('/api/rooms', async (req, res) => {
   }
 })
 
-// GET /api/rooms/:id - fetch specific room from database
 router.get('/api/rooms/:id', async (req, res) => {
   try {
     const rows = await query(`
       SELECT 
-        id,
-        room_number as roomNumber,
-        room_type as roomType,
-        capacity,
-        base_price as basePrice,
-        status,
+        id, room_number as roomNumber, room_type as roomType,
+        capacity, base_price as basePrice, status,
         COALESCE(images, JSON_ARRAY()) as images
-      FROM rooms
-      WHERE id = ?
+      FROM rooms WHERE id = ?
     `, [req.params.id])
-    const roomArr = rows as any[]
-    const room = roomArr[0]
-    if (!room) {
-      return res.status(404).json({ error: 'Room not found' })
-    }
+    const roomsArray = rows as any[]
+    if (roomsArray.length === 0) return res.status(404).json({ error: 'Room not found' })
+    const room = roomsArray[0]
     res.json({ ...room, basePrice: Number(room.basePrice) })
   } catch (err) {
     console.error('Error fetching room:', err)
